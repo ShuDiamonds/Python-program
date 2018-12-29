@@ -10,6 +10,7 @@ from ctypes import *
 user32 = windll.user32
 
 
+
 VK_CODE = {'backspace':0x08,
            'tab':0x09,
            'clear':0x0C,

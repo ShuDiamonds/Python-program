@@ -1,0 +1,8 @@
+*.json
+*.exe
+*.png
+*.spec
+*.txt
+build/
+dist/
+__pycache__

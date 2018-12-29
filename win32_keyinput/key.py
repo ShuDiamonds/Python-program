@@ -5,6 +5,7 @@ Created on Sat Dec 29 10:48:54 2018
 @author: shuichi
 """
 import time
+from datetime import datetime
 from ctypes import *
 user32 = windll.user32
 
@@ -160,22 +161,36 @@ VK_CODE = {'backspace':0x08,
 vk_leftbutton = 0x01 #マウス左ボタン Virtual Keyboad
 vk_esc = 0x1B # ESC Virtual Keyboad
 
+filepath ="./out.txt"
 if __name__ == '__main__':
     inputwords=[]
     inputword=[]
     timecount=0
+    tmpkey=0
     while 1:
-        time.sleep(0.1)
+        time.sleep(0.05)
         for key,code in VK_CODE.items():
             if user32.GetAsyncKeyState(code)!=0:
-                print(key)
-                inputword.append(key)
+                if tmpkey !=key or timecount>2:
+                    inputword.append(key)
+                    timecount=0
+                    print(key)
+                tmpkey=key
+                
                 
         timecount=timecount+1
-        if timecount>30: #pass 3s
+        if timecount>20: #pass 3s
             timecount=0
             if len(inputword)!=0:
+                print("input: "+" ".join(inputword))
                 inputwords.append(".".join(inputword))
+                
+                #write file
+                ssss=datetime.now().strftime("%Y/%m/%d %H:%M:%S")+","+".".join(inputword)+"\n"
+                with open(filepath, mode='a') as f:
+                    f.write(ssss)
+                
+                # check esc*5 and break
                 if "".join(inputword)=="escescescescesc":
                     break
                 inputword=[]

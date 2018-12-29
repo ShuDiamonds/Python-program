@@ -182,7 +182,7 @@ if __name__ == '__main__':
         if timecount>20: #pass 3s
             timecount=0
             if len(inputword)!=0:
-                print("input: "+" ".join(inputword))
+                print(datetime.now().strftime("%Y/%m/%d %H:%M:%S")+" input: "+" ".join(inputword))
                 inputwords.append(".".join(inputword))
                 
                 #write file

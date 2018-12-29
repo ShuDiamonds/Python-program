@@ -160,25 +160,25 @@ VK_CODE = {'backspace':0x08,
 vk_leftbutton = 0x01 #マウス左ボタン Virtual Keyboad
 vk_esc = 0x1B # ESC Virtual Keyboad
 
-
-inputwords=[]
-inputword=[]
-timecount=0
-while 1:
-    time.sleep(0.1)
-    for key,code in VK_CODE.items():
-        if user32.GetAsyncKeyState(code)!=0:
-            print(key)
-            inputword.append(key)
-            
-    timecount=timecount+1
-    if timecount>30: #pass 3s
-        timecount=0
-        if len(inputword)!=0:
-            inputwords.append(".".join(inputword))
-            if "".join(inputword)=="escescescescesc":
-                break
-            inputword=[]
+if __name__ == '__main__':
+    inputwords=[]
+    inputword=[]
+    timecount=0
+    while 1:
+        time.sleep(0.1)
+        for key,code in VK_CODE.items():
+            if user32.GetAsyncKeyState(code)!=0:
+                print(key)
+                inputword.append(key)
+                
+        timecount=timecount+1
+        if timecount>30: #pass 3s
+            timecount=0
+            if len(inputword)!=0:
+                inputwords.append(".".join(inputword))
+                if "".join(inputword)=="escescescescesc":
+                    break
+                inputword=[]
 
           
             

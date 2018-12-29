@@ -7,13 +7,14 @@ Created on Sat Dec 29 12:05:16 2018
 
 import time
 import threading
-
+text="hoge1"
 def func1():
-    print("func1")
     time.sleep(1)
+    print(text)
+    
 
 def func2():
-    print("func2")
+    print(text)
     time.sleep(1)
 
 if __name__ == "__main__":
@@ -22,3 +23,4 @@ if __name__ == "__main__":
 
     thread_1.start()
     thread_2.start()
+    text="aaa"

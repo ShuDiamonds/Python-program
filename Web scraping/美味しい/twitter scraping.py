@@ -63,8 +63,8 @@ def parseHtml(html_data):
         user_name = tweet_block.select('.username')[0].text
 
         # ツイートの日時を取得
-        tweet_timestamp = tweet_block.select('.tweet-timestamp')[0].text
-
+        #tweet_timestamp = tweet_block.select('.tweet-timestamp')[0].text
+        tweet_timestamp = tweet_block.select('.tweet-timestamp')[0].get("title")
         # ツイート内容を取得
         tweet_body = tweet_block.select('.tweet-text')[0].text
 
@@ -112,10 +112,10 @@ def getNextTweet(user_id, max_position):
     print(next_position + 'の出力完了')
 
     # 一応スリープをかませる
-    sleep(1)
-
+    sleep(0.5)
+    return next_position
     # 再起的に呼び出す
-    getNextTweet(user_id, next_position)
+    #getNextTweet(user_id, next_position)
 
 
 def getFirstTweet(user_id):
@@ -134,9 +134,11 @@ def getFirstTweet(user_id):
 
     # 取得開始位置を取得
     max_position = getMinPosition(html_data)
-
+    
     # 次
-    getNextTweet(crawle_user_id, max_position)
+    next_posi=getNextTweet(crawle_user_id, max_position)
+    while 1:
+        next_posi=getNextTweet(crawle_user_id, next_posi)
 
 # プログラム実行
 getFirstTweet(crawle_user_id)

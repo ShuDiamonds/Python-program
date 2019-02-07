@@ -16,7 +16,7 @@ def not_exist_mkdir( output_path ):
         os.mkdir( output_path )
 
 def get_search_results_df(keyword,number=10,year=2015):
-    columns = ["rank", "title", "writer", "year", "citations", "url","pdfurl"]
+    columns = ["rank", "title", "writer", "year", "citations", "url","pdf_url","citations_url"]
     df = pd.DataFrame(columns=columns) #表の作成
     #html_doc = requests.get("https://scholar.google.co.jp/scholar?hl=ja&as_sdt=0%2C5&num=" + str(number) + "&q=" + keyword).text
     html_doc = requests.get("https://scholar.google.co.jp/scholar?"+"as_ylo="+str(year)+ "&q=" + keyword+"&hl=ja&as_sdt=0,5"+"&num="+str(number) ).text
@@ -29,17 +29,19 @@ def get_search_results_df(keyword,number=10,year=2015):
     not_exist_mkdir("pdf")
     for tag in tags:
         try:
+            ### get title
             title = tag.find("h3", {"class": "gs_rt"}).text.replace("[HTML]","")
             try:
                 url = tag.find("h3", {"class": "gs_rt"}).select("a")[0].get("href")
             except:
                 print(sys.exc_info())
                 url=None
-            ##PDF url
+            
+            ### PDF get
             try:
-                pdfurl = tag.find("div", {"class": "gs_or_ggsm"}).select("a")[0].get("href")
+                pdf_url = tag.find("div", {"class": "gs_or_ggsm"}).select("a")[0].get("href")
                 try:
-                    r = requests.get(pdfurl)
+                    r = requests.get(pdf_url)
                     if r.status_code == 200:
                         file_name=title.replace("/"," ").replace("/","").replace(":"," ").replace(";"," ").replace("="," ").replace("?"," ").replace("|"," ").replace("<"," ").replace(">"," ")+".pdf"
                         with open("./pdf/"+file_name, 'wb') as f:
@@ -48,16 +50,22 @@ def get_search_results_df(keyword,number=10,year=2015):
                     print(sys.exc_info())
                     pass
             except:
-                pdfurl=None
+                pdf_url=None
+            
+            ### get writer info
             writer = tag.find("div", {"class": "gs_a"}).text
             writer = re.sub(r'\d', '', writer)
             year = tag.find("div", {"class": "gs_a"}).text            
             year = re.search(r'\d{4}', year).group()
+            
+            ### get citations
             try:
                 citations = tag.find(text=re.compile("引用元")).replace("引用元","")
+                citations_url = "https://scholar.google.co.jp"+tag.find("div", {"class": "gs_fl"}).find("a",href=re.compile(r"/scholar.cites.*")).get("href")
             except:
                 citations=None
-            se = pd.Series([rank, title, writer, year, citations, url,pdfurl], columns)
+                citations_url=None
+            se = pd.Series([rank, title, writer, year, citations, url,pdf_url,citations_url], columns)
             df = df.append(se, columns)
             rank += 1
         except:
@@ -75,7 +83,8 @@ if __name__ == '__main__':
     
     keyword = "遺伝的アルゴリズム"
     number = 10
-    search_results_df = get_search_results_df(keyword,number)
+    year=2015
+    search_results_df = get_search_results_df(keyword,number,year)
     filename = "Google_Scholar.csv"
     search_results_df.to_csv(filename, encoding="utf-8")
     

@@ -11,6 +11,8 @@ import sys
 import datetime
 import time
 import os
+import subprocess
+
 
 def not_exist_mkdir( output_path ):
     if( not os.path.exists(output_path) ):
@@ -92,7 +94,7 @@ def get_search_results_df(keyword,startpage=0,year=2015,pdfgetflag=False):
                     explanation = tag.find("div", {"class": "gs_rs"}).text[7:10]
                     print(explanation)
                     #explanation_detail=get_article_detail(detail_url=url,detail_text=explanation)
-                    tmp=get_article_detail(detail_url=url,detail_text=explanation).replace("\n","").replace("\r","").replace("\t","")
+                    #tmp=get_article_detail(detail_url=url,detail_text=explanation).replace("\n","").replace("\r","").replace("\t","")
                     tmp1=[str(rank),title,tmp]
                     with open("./explanation/"+keyword+".tsv", 'a') as f:
                                 f.write("\t".join(tmp1)+"\n")
@@ -111,9 +113,9 @@ def get_search_results_df(keyword,startpage=0,year=2015,pdfgetflag=False):
             print("rank{0} has errored".format(rank))
             print(sys.exc_info())
          
-        
-    
     return df
+
+
 
 if __name__ == '__main__':
     progress_s_time = datetime.datetime.today()
@@ -132,11 +134,23 @@ if __name__ == '__main__':
     filename = "Google_Scholar.csv"
     search_results_df.to_csv(filename, encoding="utf-8")
     
+    ### making dictonary
+    with open("./userdic/japtext.txt", 'w') as f:
+        f.write("\n".join(search_results_df["title"].values))
+    
+    ## wakatigaki by janome and output janome_extracted.txt
+    command = ["python", "./userdic/termex_janome.py", "./userdic/japtext.txt"] #python termex_janome.py japanese_text.txt
+    subprocess.call(command)
+    
+    # transform from csv to .dic file
+    command = ["python", "./userdic/makedic.py"] #python termex_janome.py japanese_text.txt
+    subprocess.call(command)
+    
+    
     import MeCab
-    m = MeCab.Tagger ("-Ochasen")
     def extractNoun(text):
         # パース
-        #mecab = MeCab.Tagger("-u ./userdic/patentdic.dic")
+        mecab = MeCab.Tagger("-u ./userdic/myterm.dic")
         mecab = MeCab.Tagger()
         parse = mecab.parse(text)
         lines = parse.split('\n')
@@ -148,6 +162,7 @@ if __name__ == '__main__':
 
     for x in search_results_df["title"]:
         print(extractNoun(x))
+        
     
     
     progress_e_time = time.time()

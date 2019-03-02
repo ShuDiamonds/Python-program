@@ -63,7 +63,7 @@ def get_keys_from_value(d, val):
         return tmp[0]
 
 if __name__ == '__main__':
-    
+    search_results_df=pd.read_csv("Google_Scholar.csv",index_col=0)
     print(search_results_df["achivementlist"])
     print("#############")
     

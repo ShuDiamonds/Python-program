@@ -28,7 +28,18 @@ def get_article_detail(detail_url,detail_text):
         return soup_detail.find(text=re.compile(detail_text))
     except:
         return "error"
-
+def get_maximum_page_numbert(keyword,startpage=0,year=2015):
+    html_doc = requests.get("https://scholar.google.co.jp/scholar?"+"as_ylo="+str(year)+ "&q=" + keyword+"&hl=ja&as_sdt=0,5"+"&start="+str(startpage) ).text
+    soup = BeautifulSoup(html_doc, "html.parser") # BeautifulSoupの初期化
+    tags = soup.find_all("a", {"class": "gs_nma"})
+    pagenumbers=[]
+    for tag in tags:
+        try:
+            pagenumbers.append(int(tag.text))
+        except:
+            pass
+    return max(pagenumbers)
+    
 def get_search_results_df(keyword,startpage=0,year=2015,pdfgetflag=False):
     columns = ["rank", "title", "writer", "year", "citations",
                "url","pdf_url","citations_url","explanation_detail"]
@@ -126,43 +137,18 @@ if __name__ == '__main__':
     startpage=0
     year=2005
     search_results_df=pd.DataFrame()
+    
+    ### get maximum page number
+    maxpagenum=get_maximum_page_numbert(keyword=keyword,startpage=startpage,year=year)
+    
     #search_results_df = get_search_results_df(keyword=keyword,startpage=startpage,year=year)
-    for startpage in range(0,20,10):
+    for startpage in range(0,maxpagenum*10,10):
+        time.sleep(1)
         print("startpage:"+str(startpage))
         search_results_df=search_results_df.append(get_search_results_df(keyword=keyword,startpage=startpage,year=year))
     search_results_df=search_results_df.reset_index(drop=True)
     filename = "Google_Scholar.csv"
     search_results_df.to_csv(filename, encoding="utf-8")
-    
-    ### making dictonary
-    with open("./userdic/japtext.txt", 'w') as f:
-        f.write("\n".join(search_results_df["title"].values))
-    
-    ## wakatigaki by janome and output janome_extracted.txt
-    command = ["python", "./userdic/termex_janome.py", "./userdic/japtext.txt"] #python termex_janome.py japanese_text.txt
-    subprocess.call(command)
-    
-    # transform from csv to .dic file
-    command = ["python", "./userdic/makedic.py"] #python termex_janome.py japanese_text.txt
-    subprocess.call(command)
-    
-    
-    import MeCab
-    def extractNoun(text):
-        # パース
-        mecab = MeCab.Tagger("-u ./userdic/myterm.dic")
-        mecab = MeCab.Tagger()
-        parse = mecab.parse(text)
-        lines = parse.split('\n')
-        items = (re.split('[\t,]', line) for line in lines)
-        # 名詞をリストに格納
-        return [item[0] for item in items
-                if (item[0] not in ('EOS', '', 't', 'ー') and
-                     item[1] == '名詞' and item[2] == '一般')]
-
-    for x in search_results_df["title"]:
-        print(extractNoun(x))
-        
     
     
     progress_e_time = time.time()

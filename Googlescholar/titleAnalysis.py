@@ -153,6 +153,8 @@ if __name__ == '__main__':
     search_results_df["achivementlist"]=achivementlist
     search_results_df.to_csv("Google_Scholar.csv", encoding="utf-8")
     
+    
+    
     """
     
     print("#################################")

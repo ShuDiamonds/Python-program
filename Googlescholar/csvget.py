@@ -133,7 +133,9 @@ if __name__ == '__main__':
     print('実行開始時間(Start time)：' + str( progress_s_time.strftime("%Y/%m/%d %H:%M:%S") ))
     progress_s_time = time.time()
     
-    keyword = "照明 機械学習"
+    keyword = "ストレス推定　健康"
+    #keyword = "推定　QOL"
+    
     startpage=0
     year=2005
     search_results_df=pd.DataFrame()

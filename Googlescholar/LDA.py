@@ -39,10 +39,12 @@ if __name__ == '__main__':
     progress_s_time = datetime.datetime.today()
     print('実行開始時間(Start time)：' + str( progress_s_time.strftime("%Y/%m/%d %H:%M:%S") ))
     progress_s_time = time.time()
+    
     not_exist_mkdir("./tmp")
+    
     search_results_df=pd.read_csv("Google_Scholar.csv",index_col=0)
-    #docs = search_results_df["achivementlist"]
-    docs = search_results_df["methodlist"].fillna("")
+    docs = search_results_df["achivementlist"].fillna("")
+    #docs = search_results_df["methodlist"].fillna("")
     
     texts=list(map(splitdfwords,docs))
     dictionary = corpora.Dictionary(texts)
@@ -130,7 +132,9 @@ if __name__ == '__main__':
     plt.savefig("wordball.png")
     plt.show()
     
-              
+    print("############ summary #############")
+    print("dictionary lenth:",len(dictionary))
+    print("corpus_tfidf lenth:",len(corpus_tfidf))          
               
     progress_e_time = time.time()
     progress_i_time = progress_e_time - progress_s_time

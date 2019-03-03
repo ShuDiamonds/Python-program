@@ -25,6 +25,9 @@ import numpy as np
 import pandas as pd
 
 from gensim import corpora, models, similarities
+import matplotlib.pyplot as plt
+
+from wordcloud import WordCloud
 
 def splitdfwords(text):
     return text.split(" ")
@@ -94,10 +97,40 @@ if __name__ == '__main__':
     #ref: http://blog.yuku-t.com/entry/20110623/1308810518
     
     #model = ldamodel.LdaModel(bow_corpus, id2word=dictionary, num_topics=100)
-    lda = models.LdaModel(corpus=corpus_tfidf, id2word=dictionary, num_topics=100)
+    lda = models.LdaModel(corpus=corpus_tfidf, id2word=dictionary, num_topics=8)
     lda.save('./tmp/jawiki_lda.model')  # せっかく計算したので保存
     print(lda.print_topics(6))
     
+    
+    
+    # Word cloud
+    fig, axs = plt.subplots(ncols=4, nrows=int(lda.num_topics/4), figsize=(25,17))
+    axs = axs.flatten()
+    
+    def color_func(word, font_size, position, orientation, random_state, font_path):
+        return 'darkturquoise'
+    from PIL import Image
+    mask = np.array(Image.open('ball.png'))
+    
+    for i, t in enumerate(range(lda.num_topics)):
+        x = dict(lda.show_topic(t, 30))
+        im = WordCloud(
+            font_path='./fonts/sawarabi-mincho-medium.ttf',
+            background_color='white',
+            color_func=color_func,
+            mask=mask,
+            random_state=0
+        ).generate_from_frequencies(x)
+        axs[i].imshow(im)
+        axs[i].axis('off')
+        axs[i].set_title('Topic '+str(t))
+            
+    plt.tight_layout()
+    plt.savefig("wordball.png")
+    plt.show()
+    
+              
+              
     progress_e_time = time.time()
     progress_i_time = progress_e_time - progress_s_time
     print( '実行時間(duration)：' + str(round(progress_i_time,1)) + "秒" )

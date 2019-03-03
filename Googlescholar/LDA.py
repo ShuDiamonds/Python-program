@@ -41,7 +41,8 @@ if __name__ == '__main__':
     progress_s_time = time.time()
     not_exist_mkdir("./tmp")
     search_results_df=pd.read_csv("Google_Scholar.csv",index_col=0)
-    docs = search_results_df["achivementlist"]
+    #docs = search_results_df["achivementlist"]
+    docs = search_results_df["methodlist"].fillna("")
     
     texts=list(map(splitdfwords,docs))
     dictionary = corpora.Dictionary(texts)

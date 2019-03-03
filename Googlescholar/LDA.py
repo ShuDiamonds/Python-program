@@ -77,15 +77,13 @@ if __name__ == '__main__':
     print(tfidf[doc_bow])
     # step 2 -- use the model to transform vectors
     corpus_tfidf = tfidf[corpus]
-    lsi = models.LsiModel(corpus_tfidf, id2word=dictionary, num_topics=2)
+    lsi = models.LsiModel(corpus_tfidf, id2word=dictionary, num_topics=6)
     corpus_lsi = lsi[corpus_tfidf]
     # create a double wrapper over the original corpus: bow->tfidf->fold-in-lsi
     #これをcorpusに適用する。 (一度使ったデータを、そのデータがtrainingで作ったtfidf空間へと変換する)
     
     #tfidf空間にlsiモデルを作成する。そしてlsiで分類されたもののcorpusを抽出。
-    lsi = models.LsiModel(corpus_tfidf, id2word=dictionary, num_topics=2)
-    corpus_lsi = lsi[corpus_tfidf]
-    lsi.print_topics(2)
+    lsi.print_topics()
     
     for doc in corpus_lsi: # both bow->tfidf and tfidf->lsi transformations are actually executed here, on the fly
         print(doc)
@@ -93,7 +91,12 @@ if __name__ == '__main__':
     
     
     ###### LDA
+    #ref: http://blog.yuku-t.com/entry/20110623/1308810518
+    
     #model = ldamodel.LdaModel(bow_corpus, id2word=dictionary, num_topics=100)
+    lda = models.LdaModel(corpus=corpus_tfidf, id2word=dictionary, num_topics=100)
+    lda.save('./tmp/jawiki_lda.model')  # せっかく計算したので保存
+    print(lda.print_topics(6))
     
     progress_e_time = time.time()
     progress_i_time = progress_e_time - progress_s_time

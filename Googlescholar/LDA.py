@@ -34,6 +34,12 @@ def splitdfwords(text):
 def not_exist_mkdir( output_path ):
     if( not os.path.exists(output_path) ):
         os.mkdir( output_path )
+def get_keys_from_value(d, val):
+    tmp=[k for k, v in d.items() if v == val]
+    if  not tmp: # when empty array
+        return None
+    else:
+        return tmp[0]
     
 if __name__ == '__main__':
     progress_s_time = datetime.datetime.today()
@@ -43,7 +49,12 @@ if __name__ == '__main__':
     not_exist_mkdir("./tmp")
     
     search_results_df=pd.read_csv("Google_Scholar.csv",index_col=0)
-    docs = search_results_df["achivementlist"].fillna("")
+    
+    
+    search_results_df["methodlist"]=search_results_df["methodlist"].fillna("")
+    search_results_df=search_results_df[search_results_df["methodlist"] !=""].fillna("")
+    docs=search_results_df["achivementlist"]
+    #docs = search_results_df["achivementlist"].fillna("")
     #docs = search_results_df["methodlist"].fillna("")
     
     texts=list(map(splitdfwords,docs))
@@ -79,7 +90,8 @@ if __name__ == '__main__':
     #corpusのtrainingのためのtfidfというオブジェクトをcorpusから作る。	
     tfidf = models.TfidfModel(corpus)
     #特徴ベクトルがtfidfベクトル空間のベクトルに変換することができる。
-    doc_bow = [(0, 1), (1, 1)]
+    doc_bow = dictionary.doc2bow("3 次元 物体 認識".split())
+    print( [(get_keys_from_value(dictionary.token2id,x[0]),x[1]) for x in tfidf[doc_bow]])
     print(tfidf[doc_bow])
     # step 2 -- use the model to transform vectors
     corpus_tfidf = tfidf[corpus]
@@ -103,10 +115,16 @@ if __name__ == '__main__':
     lda = models.LdaModel(corpus=corpus_tfidf, id2word=dictionary, num_topics=8)
     lda.save('./tmp/jawiki_lda.model')  # せっかく計算したので保存
     print(lda.print_topics(6))
+    corpus_lda = lda[corpus_tfidf]
+    for doc in corpus_lda: # both bow->tfidf and tfidf->lsi transformations are actually executed here, on the fly
+        print(doc)
     
+    def get_topic(doc):
+        return sorted(doc, key=lambda x:x[1],reverse=True)[0][0]
+    topicclass=[get_topic(doc) for doc in corpus_lda]
+    search_results_df["topicclass"]=topicclass
     
-    
-    # Word cloud
+    ############# Word cloud
     fig, axs = plt.subplots(ncols=4, nrows=int(lda.num_topics/4), figsize=(25,17))
     axs = axs.flatten()
     
@@ -132,6 +150,17 @@ if __name__ == '__main__':
     plt.savefig("wordball.png")
     plt.show()
     
+    #############
+    #tf-idf特徴量の最も大きい単語を示す。
+    def get_maximum_tfidfword(word):
+        doc_bow = dictionary.doc2bow(word.split())
+        tmp01011=[(get_keys_from_value(dictionary.token2id,x[0]),x[1]) for x in tfidf[doc_bow]]
+        return sorted(tmp01011, key=lambda x:x[1],reverse=True)[0][0]
+    
+    search_results_df["maximum_tfidfword"]=list(map(get_maximum_tfidfword,search_results_df["achivementlist"]))
+    
+    tmp001=search_results_df[["title","topicclass","achivementlist","maximum_tfidfword"]][search_results_df["methodlist"] !=""]
+        
     print("############ summary #############")
     print("dictionary lenth:",len(dictionary))
     print("corpus_tfidf lenth:",len(corpus_tfidf))          

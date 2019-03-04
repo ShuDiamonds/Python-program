@@ -191,3 +191,7 @@ if __name__ == '__main__':
     
     """
     
+    
+    #####
+    
+    tmp001=search_results_df["title"][search_results_df["methodlist"] !=""]

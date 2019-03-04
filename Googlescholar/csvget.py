@@ -28,10 +28,10 @@ def get_article_detail(detail_url,detail_text):
         return soup_detail.find(text=re.compile(detail_text))
     except:
         return "error"
-def get_maximum_page_numbert(keyword,startpage=0,year=2015):
+def get_maximum_page_number(keyword,startpage=0,year=2015):
     html_doc = requests.get("https://scholar.google.co.jp/scholar?"+"as_ylo="+str(year)+ "&q=" + keyword+"&hl=ja&as_sdt=0,5"+"&start="+str(startpage) ).text
     soup = BeautifulSoup(html_doc, "html.parser") # BeautifulSoupの初期化
-    tags = soup.find_all("a", {"class": "gs_nma"})
+    tags = soup.find_all("div", {"class": "gs_nma"})
     pagenumbers=[]
     for tag in tags:
         try:
@@ -39,7 +39,23 @@ def get_maximum_page_numbert(keyword,startpage=0,year=2015):
         except:
             pass
     return max(pagenumbers)
-    
+
+def get_maximum_page_number2(keyword,startpage=0,year=2015):
+    html_doc = requests.get("https://scholar.google.co.jp/scholar?"+"as_ylo="+str(year)+ "&q=" + keyword+"&hl=ja&as_sdt=0,5"+"&start="+str(startpage) ).text
+    soup = BeautifulSoup(html_doc, "html.parser") # BeautifulSoupの初期化
+    tags = soup.find_all("div", {"class": "gs_ab_mdw"})
+    for tag in tags:
+        try:
+            tempresult=tag.text.find("件")
+            if tempresult != -1:
+                tempresult= int(re.sub(r'\D', '',tag.text[:tempresult]))
+                break
+        except:
+            pass
+    if tempresult>990: #maximun page
+        tempresult=990
+    return int(tempresult/10)
+
 def get_search_results_df(keyword,startpage=0,year=2015,pdfgetflag=False):
     columns = ["rank", "title", "writer", "year", "citations",
                "url","pdf_url","citations_url","explanation_detail"]
@@ -133,7 +149,8 @@ if __name__ == '__main__':
     print('実行開始時間(Start time)：' + str( progress_s_time.strftime("%Y/%m/%d %H:%M:%S") ))
     progress_s_time = time.time()
     
-    keyword = "ストレス推定　健康"
+    keyword = "物体認識"
+    #keyword = "ストレス推定"
     #keyword = "推定　QOL"
     
     startpage=0
@@ -141,12 +158,12 @@ if __name__ == '__main__':
     search_results_df=pd.DataFrame()
     
     ### get maximum page number
-    maxpagenum=get_maximum_page_numbert(keyword=keyword,startpage=startpage,year=year)
-    
+    maxpagenum=get_maximum_page_number2(keyword=keyword,startpage=startpage,year=year)
+
     #search_results_df = get_search_results_df(keyword=keyword,startpage=startpage,year=year)
     for startpage in range(0,maxpagenum*10,10):
         time.sleep(1)
-        print("startpage:"+str(startpage))
+        print("startpage:{0}/{1}".format(startpage,maxpagenum))
         search_results_df=search_results_df.append(get_search_results_df(keyword=keyword,startpage=startpage,year=year))
     search_results_df=search_results_df.reset_index(drop=True)
     filename = "Google_Scholar.csv"

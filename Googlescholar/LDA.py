@@ -41,6 +41,22 @@ def get_keys_from_value(d, val):
     else:
         return tmp[0]
     
+def plot_polar(labels, values, imgname):
+    angles = np.linspace(0, 2 * np.pi, len(labels) + 1, endpoint=True)
+    values = np.concatenate((values, [values[0]]))  # 閉じた多角形にする
+    fig = plt.figure()
+    ax = fig.add_subplot(111, polar=True)
+    ax.plot(angles, values, 'o-')  # 外枠
+    ax.fill(angles, values, alpha=0.25)  # 塗りつぶし
+    ax.set_thetagrids(angles[:-1] * 180 / np.pi, labels)  # 軸ラベル
+    ax.set_rlim(0 ,250)
+    fig.savefig(imgname)
+    plt.close(fig)
+
+labels = ['HP', 'Attack', 'Defense', 'Speed',"type"]
+values = [155, 156, 188, 139,90]
+plot_polar(labels, values, "radar.png")
+
 if __name__ == '__main__':
     progress_s_time = datetime.datetime.today()
     print('実行開始時間(Start time)：' + str( progress_s_time.strftime("%Y/%m/%d %H:%M:%S") ))
@@ -112,17 +128,52 @@ if __name__ == '__main__':
     #ref: http://blog.yuku-t.com/entry/20110623/1308810518
     
     #model = ldamodel.LdaModel(bow_corpus, id2word=dictionary, num_topics=100)
-    lda = models.LdaModel(corpus=corpus_tfidf, id2word=dictionary, num_topics=8)
+    lda = models.LdaModel(corpus=corpus_tfidf, id2word=dictionary, num_topics=16)
     lda.save('./tmp/jawiki_lda.model')  # せっかく計算したので保存
     print(lda.print_topics(6))
     corpus_lda = lda[corpus_tfidf]
-    for doc in corpus_lda: # both bow->tfidf and tfidf->lsi transformations are actually executed here, on the fly
-        print(doc)
     
     def get_topic(doc):
         return sorted(doc, key=lambda x:x[1],reverse=True)[0][0]
     topicclass=[get_topic(doc) for doc in corpus_lda]
     search_results_df["topicclass"]=topicclass
+    
+    ### clustering LDA topic result
+    # get topicvector df
+    topicname=["topic"+str(i) for i in range(lda.num_topics)]
+    topicdata=pd.DataFrame(columns=topicname)
+    for i,doc in enumerate(corpus_lda): # both bow->tfidf and tfidf->lsi transformations are actually executed here, on the fly
+        #print(doc)
+        topicdata.loc[i]=[x[1] for x in doc]
+        
+    #clusering
+    from sklearn.cluster import KMeans
+    clusters_resultlist=[]
+    cluster_num=int(lda.num_topics/2)
+    clusters = KMeans(n_clusters=cluster_num, random_state=0).fit_predict(topicdata)
+    
+    # print each cluster's topic strength
+    topicdata["clusters"]=clusters
+    leadervector=[]
+    for i in range(cluster_num):
+        leadervector.append(list(topicdata[topicdata["clusters"]==i].mean()[topicname]))
+    
+    # make radar chart #ref:https://qiita.com/1007/items/80406e098a4212571b2e
+    labels = topicname
+    angles = np.linspace(0, 2 * np.pi, len(labels) + 1, endpoint=True)
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(111, polar=True)
+    for radardata in leadervector:
+        radardataTMP=np.concatenate((radardata, [radardata[0]]))  # 閉じた多角形にする
+        ax.plot(angles, radardataTMP, 'o-')  # 外枠
+        ax.fill(angles, radardataTMP, alpha=0.25)  # 塗りつぶし
+    
+    ax.set_thetagrids(angles[:-1] * 180 / np.pi, labels)  # 軸ラベル
+    ax.set_rlim(0 ,max(max(leadervector)))
+    fig.savefig("radar.png")
+    plt.show()
+    plt.close(fig)
     
     ############# Word cloud
     fig, axs = plt.subplots(ncols=4, nrows=int(lda.num_topics/4), figsize=(25,17))

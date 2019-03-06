@@ -158,9 +158,9 @@ if __name__ == '__main__':
     search_results_df=pd.DataFrame()
     
     ### get maximum page number
-    maxpagenum=get_maximum_page_number(keyword=keyword,startpage=startpage,year=year)
+    #maxpagenum=get_maximum_page_number(keyword=keyword,startpage=startpage,year=year)
     #maxpagenum=get_maximum_page_number2(keyword=keyword,startpage=startpage,year=year)
-
+    maxpagenum=10
     #search_results_df = get_search_results_df(keyword=keyword,startpage=startpage,year=year)
     for startpage in range(0,maxpagenum*10,10):
         time.sleep(10)

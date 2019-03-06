@@ -162,7 +162,7 @@ if __name__ == '__main__':
 
     #search_results_df = get_search_results_df(keyword=keyword,startpage=startpage,year=year)
     for startpage in range(0,maxpagenum*10,10):
-        time.sleep(1)
+        time.sleep(5)
         print("startpage:{0}/{1}".format(startpage,maxpagenum))
         search_results_df=search_results_df.append(get_search_results_df(keyword=keyword,startpage=startpage,year=year))
     search_results_df=search_results_df.reset_index(drop=True)

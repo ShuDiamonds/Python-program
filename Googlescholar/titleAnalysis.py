@@ -21,7 +21,7 @@ import numpy as np
 
 import re
 import sys
-import datetime
+from datetime import date, datetime, timedelta
 import time
 import os
 import subprocess
@@ -80,6 +80,11 @@ def return_methodword(text):
 def return_objectword(text):
         returnword = {word : "object"for word in objectword if word in text}
         return returnword
+    
+def debugprint(text):
+    with open("debug.txt", "a") as f:
+        f.write(datetime.now().strftime("%Y_%m_%d %H:%M:%S ")+text+"\n")
+    return
 
 def list2flatten(l):
     return list(chain.from_iterable(l))
@@ -127,12 +132,17 @@ if __name__ == '__main__':
         tmp011=dict(sorted({dictword:x.find(dictword) for dictword in tmp010.keys()}.items(), key=lambda x: x[1]))
         rear_sentence=x
         for splitword in tmp011.keys():
-            dividedsentence=rear_sentence.split(splitword)
-            rear_sentence=dividedsentence[1]
-            if tmp010[splitword] =='object':
-                object_sentence.append(dividedsentence[0])
-            else:
-                method_sentence.append(dividedsentence[0])
+            try :
+                dividedsentence=rear_sentence.split(splitword)
+                rear_sentence=dividedsentence[1]
+                if tmp010[splitword] =='object':
+                    object_sentence.append(dividedsentence[0])
+                else:
+                    method_sentence.append(dividedsentence[0])
+            except Exception as e:
+                body=str(e.args)
+                debugprint(body)
+                print("ERROR:"+body)
         #extract noun
         method_sentence=list2flatten([extract_eightpart(x) for x in method_sentence])
         object_sentence=list2flatten([extract_eightpart(x) for x in object_sentence])

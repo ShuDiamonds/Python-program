@@ -102,6 +102,7 @@ if __name__ == '__main__':
     #corpusは膨大になってしまうため、一度Matrix Market fileに保存される（した）。 これを呼び出す。
     corpus = corpora.MmCorpus('./tmp/deerwester.mm')
     
+    """
     #### LSI
     #corpusのtrainingのためのtfidfというオブジェクトをcorpusから作る。	
     tfidf = models.TfidfModel(corpus)
@@ -122,7 +123,7 @@ if __name__ == '__main__':
     for doc in corpus_lsi: # both bow->tfidf and tfidf->lsi transformations are actually executed here, on the fly
         print(doc)
     lsi.save('./tmp/model.lsi') # same for tfidf, lda, ...
-    
+    """
     
     ###### LDA
     #ref: http://blog.yuku-t.com/entry/20110623/1308810518
